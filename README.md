@@ -15,16 +15,20 @@ The programs use OpenCV libs and stdc++.
 
 To build:
 
+```
  g++ --std=c++11 jpegs2mp4.cpp -lopencv_core -lopencv_imgproc -lopencv_imgcodecs -lopencv_videoio  -o jpegs2mp4
-
  g++ --std=c++11 jpegs2video.cpp -lopencv_core -lopencv_imgproc -lopencv_imgcodecs -lopencv_videoio -lopencv_highgui  -o jpegs2video
-
+```
 or 
 
+```
  gcc ... -lstdc++ ...
+```
 
 or just: 
 
+```
  make
+```
 
 Enjoy!
