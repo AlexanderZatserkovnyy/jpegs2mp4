@@ -24,7 +24,7 @@ const cv::String usage =
 void split(cv::String &s, char c, std::vector<int> &v){
     cv::String::size_type i=0, j=s.find(c);
     while(j!=cv::String::npos){
-    	v.push_back(std::stoi(s.substr(i,j)));
+    	v.push_back(std::stoi(s.substr(i,j-i)));
 	i = ++j;
 	j = s.find(c,j);
     }

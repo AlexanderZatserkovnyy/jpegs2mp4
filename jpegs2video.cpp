@@ -2,6 +2,14 @@
 #include <opencv2/imgproc.hpp>
 #include <iostream>
 
+bool pressed=false;
+bool drawrect = false;
+
+//cv::Rect bx(cv::Point(0,0),cv::Point(1920,1080));
+cv::Point lu(0,0),rb(0,0);
+cv::Rect bx;   
+cv::Rect bx_backup;
+
 const cv::String usage =
         "This is a video viewer for jpeg files set.\n"
         "Usage: jpegs2video\n"
@@ -19,25 +27,49 @@ const cv::String usage =
         "\nSpecify fps, rectange of interest and point for timestamps:\n"
         "   jpegs2video  './2017/7/30/*jpg' -f=10 -roi=210,350,1000,800 -t=20,40 \n\n";
 
-
 void split(cv::String &s, char c, std::vector<int> &v){
     cv::String::size_type i=0, j=s.find(c);
     while(j!=cv::String::npos){
-        v.push_back(std::stoi(s.substr(i,j)));
+        v.push_back(std::stoi(s.substr(i,j-i)));
         i = ++j;
         j = s.find(c,j);
     }
     v.push_back(std::stoi(s.substr(i,s.length())));
 }
 
+void onMouse(int event, int x, int y, int flags, void* param)
+{
+    //cv::Mat &img = *((cv::Mat*)(param)); // 1st cast it back, then deref
 
+    if(event==cv::EVENT_LBUTTONDOWN)
+    {
+        lu=cv::Point(x,y);
+	rb=lu;
+        pressed = true;
+    }
+
+    if(event==cv::EVENT_LBUTTONUP)
+    {
+        rb=cv::Point(x,y);
+	bx=cv::Rect(lu,rb); 
+        pressed=false;
+    }
+
+    if((event==cv::EVENT_MOUSEMOVE)&&pressed){
+        rb=cv::Point(x,y); 
+    }
+
+    if(event==cv::EVENT_RBUTTONDOWN)
+    {
+        bx=bx_backup;
+    }
+}
 
 int main( int argc, char** argv ) {
   //
   std::vector<cv::String> fn;
   std::vector<int> rect_v, time_v;
   cv::Mat frame,roi;
-  cv::Rect bx;   //cv::Rect bx(cv::Point(0,400),cv::Point(1920,800));
   cv::Point textPos;  //cv::Point textPos(10,20);
   cv::String input, curr, rect_s, time_s;
   int fps;
@@ -98,16 +130,17 @@ int main( int argc, char** argv ) {
   if(rect_v.size()!=4)
     bx= cv::Rect(cv::Point(0,0),cv::Point(frame.cols,frame.rows));
 
+  bx_backup=bx;
   cv::namedWindow( "Video", cv::WINDOW_NORMAL );
+  cv::setMouseCallback( "Video", onMouse, &roi);
 
   int w = (int) 1000.0/((double) fps);
 
   for (size_t k=1; (k<fn.size()) && !frame.empty(); k++ )
   {
-    if(rect_v.size()==4)
-       roi = cv::Mat(frame, bx);
-     else
-       roi = frame;
+     roi = cv::Mat(frame, bx);    
+
+     if(pressed) cv::rectangle(roi,lu,rb,cv::Scalar(0,0,255)); 
 
      if(time_v.size()==2){
        cv::String::size_type i=fn[k-1].find_last_of('.');
